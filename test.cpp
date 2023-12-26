@@ -8,8 +8,17 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Network.hpp>
 
-int mazeWidth = 80;
-int mazeHeight = 60;
+int mazeWidth = 40;
+int mazeHeight = 25;
+
+sf::RectangleShape drawWhiteSquare(float a, float x, float y)
+{
+    sf::RectangleShape ss;
+    ss.setPosition(x, y);
+    ss.setSize(sf::Vector2f(a, a));
+    ss.setFillColor(sf::Color::White);
+    return ss;
+}
 
 int xyToInt(int x, int y)
 {
@@ -28,7 +37,7 @@ int main()
 {
     srand(time(NULL));
     sf::RenderWindow window(sf::VideoMode(1000, 800), "SFML window");
-    window.setFramerateLimit(1);
+    window.setFramerateLimit(12);
 
     sf::RectangleShape mazeCells[mazeWidth][mazeHeight];
     std::vector<sf::RectangleShape> mazeWalls;
@@ -119,6 +128,7 @@ int main()
                 randomCellx = m_stack.top().first;
                 randomCelly = m_stack.top().second + 1;
             }
+            
             int currentCell = xyToInt(m_stack.top().first, m_stack.top().second);
             int neighbourCell = xyToInt(randomCellx, randomCelly);
 
@@ -126,10 +136,10 @@ int main()
             m_visited[randomCellx][randomCelly] = 1;
             m_totalVisitedCells++;
             m_connectedAdjList[currentCell].push_back(neighbourCell);
-            float cx = cell_coordinates[m_stack.top().first][m_stack.top().second].first;
-            float cy = cell_coordinates[m_stack.top().first][m_stack.top().second].second;
+            float cx = cell_coordinates[randomCellx][randomCelly].first;
+            float cy = cell_coordinates[randomCellx][randomCelly].second;
             walls.push_back({std::make_pair(cx, cy), randomCell});
-
+/*
             if (randomCell == 0) //right
             {
                 sf::RectangleShape Fill;
@@ -166,7 +176,7 @@ int main()
                 Fill.setFillColor(sf::Color::Green);
                 mazeWalls.push_back(Fill);
             }
-
+*/
         }
         else
         {
@@ -174,7 +184,8 @@ int main()
         }
 
     }
-
+    int nWalls = walls.size();
+    int itr = 0;
     while (window.isOpen())
     {
         // Process events
@@ -186,7 +197,7 @@ int main()
                 window.close();
         }
 
-        window.clear();
+        
  
         for (int i = 0; i < mazeWidth; i++)
         {
@@ -195,10 +206,57 @@ int main()
                 window.draw(mazeCells[i][j]);
             }
         }
-        for (auto &e : mazeWalls)
+        if (itr < nWalls)
+        {
+            int randomCell = walls[itr].second;
+            float wx = walls[itr].first.first;
+            float wy = walls[itr].first.second;
+            if (randomCell == 0) //right
+            {
+                sf::RectangleShape Fill;
+                Fill.setPosition(wx - 2, wy);
+                Fill.setSize(sf::Vector2f(2.f, 10.f));
+                Fill.setFillColor(sf::Color::Green);
+                window.draw(drawWhiteSquare(10.f, wx, wy));
+                window.draw(Fill);
+                std::cout << "right" << std::endl;
+            }
+            if (randomCell == 1) //up
+            {
+                sf::RectangleShape Fill;
+                Fill.setPosition(wx, wy + 10);
+                Fill.setSize(sf::Vector2f(10.f, 2.f));
+                Fill.setFillColor(sf::Color::Green);
+                window.draw(drawWhiteSquare(10.f, wx, wy));
+                window.draw(Fill);
+                std::cout << "up" << std::endl;
+            }
+            if (randomCell == 2) //left
+            {
+                sf::RectangleShape Fill;
+                Fill.setPosition(wx + 10, wy);
+                Fill.setSize(sf::Vector2f(2.f, 10.f));
+                Fill.setFillColor(sf::Color::Green);
+                window.draw(drawWhiteSquare(10.f, wx, wy));
+                window.draw(Fill);
+                std::cout << "left" << std::endl;
+            }
+            if (randomCell == 3) //down
+            {
+                sf::RectangleShape Fill;
+                Fill.setPosition(wx, wy - 2);
+                Fill.setSize(sf::Vector2f(10.f, 2.f));
+                Fill.setFillColor(sf::Color::Green);
+                window.draw(drawWhiteSquare(10.f, wx, wy));
+                window.draw(Fill);
+                std::cout << "down" << std::endl;
+            }
+            itr++;
+        }
+        /*for (auto &e : mazeWalls)
         {
             window.draw(e);
-        }
+        }*/
  
         // Update the window
         window.display();
