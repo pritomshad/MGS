@@ -8,8 +8,8 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Network.hpp>
 
-int mazeWidth = 40;
-int mazeHeight = 25;
+int mazeWidth = 80;
+int mazeHeight = 50;
 
 sf::RectangleShape drawWhiteSquare(float a, float x, float y)
 {
@@ -36,8 +36,8 @@ std::stack<std::pair<int, int>> m_stack;
 int main()
 {
     srand(time(NULL));
-    sf::RenderWindow window(sf::VideoMode(1000, 800), "SFML window");
-    window.setFramerateLimit(12);
+    sf::RenderWindow window(sf::VideoMode(1300, 900), "SFML window");
+    window.setFramerateLimit(80);
 
     sf::RectangleShape mazeCells[mazeWidth][mazeHeight];
     std::vector<sf::RectangleShape> mazeWalls;
@@ -58,7 +58,7 @@ int main()
         {
             sf::RectangleShape cell;
             cell.setPosition(cell_coordinates[i][j].first, cell_coordinates[i][j].second);
-            cell.setFillColor(sf::Color::Green);
+            cell.setFillColor(sf::Color::White);
             cell.setSize(sf::Vector2f(10.f, 10.f));
             mazeCells[i][j] = cell;
         }
@@ -78,7 +78,7 @@ int main()
     m_stack.push({0,0});
     m_visited[0][0] = 1;
     m_totalVisitedCells++;
-    while(m_totalVisitedCells != mazeWidth * mazeHeight)
+    while(!m_stack.empty())
     {
         std::vector<int> neighbours;
         
@@ -146,7 +146,7 @@ int main()
                 Fill.setPosition(cell_coordinates[m_stack.top().first][m_stack.top().second].first + 10, 
                                     cell_coordinates[m_stack.top().first][m_stack.top().second].second);
                 Fill.setSize(sf::Vector2f(2.f, 10.f));
-                Fill.setFillColor(sf::Color::Green);
+                Fill.setFillColor(sf::Color::White);
                 mazeWalls.push_back(Fill);
             }
             if (randomCell == 1) //up
@@ -155,7 +155,7 @@ int main()
                 Fill.setPosition(cell_coordinates[m_stack.top().first][m_stack.top().second].first, 
                                     cell_coordinates[m_stack.top().first][m_stack.top().second].second - 2);
                 Fill.setSize(sf::Vector2f(10.f, 2.f));
-                Fill.setFillColor(sf::Color::Green);
+                Fill.setFillColor(sf::Color::White);
                 mazeWalls.push_back(Fill);
             }
             if (randomCell == 2) //left
@@ -164,7 +164,7 @@ int main()
                 Fill.setPosition(cell_coordinates[m_stack.top().first][m_stack.top().second].first - 2, 
                                     cell_coordinates[m_stack.top().first][m_stack.top().second].second);
                 Fill.setSize(sf::Vector2f(2.f, 10.f));
-                Fill.setFillColor(sf::Color::Green);
+                Fill.setFillColor(sf::Color::White);
                 mazeWalls.push_back(Fill);
             }
             if (randomCell == 3) //down
@@ -173,7 +173,7 @@ int main()
                 Fill.setPosition(cell_coordinates[m_stack.top().first][m_stack.top().second].first, 
                                     cell_coordinates[m_stack.top().first][m_stack.top().second].second + 10);
                 Fill.setSize(sf::Vector2f(10.f, 2.f));
-                Fill.setFillColor(sf::Color::Green);
+                Fill.setFillColor(sf::Color::White);
                 mazeWalls.push_back(Fill);
             }
 */
@@ -199,13 +199,16 @@ int main()
 
         
  
-        for (int i = 0; i < mazeWidth; i++)
+/*        for (int i = 0; i < mazeWidth; i++)
         {
             for (int j = 0; j < mazeHeight; j++)
             {
                 window.draw(mazeCells[i][j]);
             }
         }
+*/
+
+
         if (itr < nWalls)
         {
             int randomCell = walls[itr].second;
@@ -216,40 +219,40 @@ int main()
                 sf::RectangleShape Fill;
                 Fill.setPosition(wx - 2, wy);
                 Fill.setSize(sf::Vector2f(2.f, 10.f));
-                Fill.setFillColor(sf::Color::Green);
+                Fill.setFillColor(sf::Color::White);
                 window.draw(drawWhiteSquare(10.f, wx, wy));
                 window.draw(Fill);
-                std::cout << "right" << std::endl;
+                //std::cout << "right" << std::endl;
             }
             if (randomCell == 1) //up
             {
                 sf::RectangleShape Fill;
                 Fill.setPosition(wx, wy + 10);
                 Fill.setSize(sf::Vector2f(10.f, 2.f));
-                Fill.setFillColor(sf::Color::Green);
+                Fill.setFillColor(sf::Color::White);
                 window.draw(drawWhiteSquare(10.f, wx, wy));
                 window.draw(Fill);
-                std::cout << "up" << std::endl;
+                //std::cout << "up" << std::endl;
             }
             if (randomCell == 2) //left
             {
                 sf::RectangleShape Fill;
                 Fill.setPosition(wx + 10, wy);
                 Fill.setSize(sf::Vector2f(2.f, 10.f));
-                Fill.setFillColor(sf::Color::Green);
+                Fill.setFillColor(sf::Color::White);
                 window.draw(drawWhiteSquare(10.f, wx, wy));
                 window.draw(Fill);
-                std::cout << "left" << std::endl;
+                //std::cout << "left" << std::endl;
             }
             if (randomCell == 3) //down
             {
                 sf::RectangleShape Fill;
                 Fill.setPosition(wx, wy - 2);
                 Fill.setSize(sf::Vector2f(10.f, 2.f));
-                Fill.setFillColor(sf::Color::Green);
+                Fill.setFillColor(sf::Color::White);
                 window.draw(drawWhiteSquare(10.f, wx, wy));
                 window.draw(Fill);
-                std::cout << "down" << std::endl;
+                //std::cout << "down" << std::endl;
             }
             itr++;
         }
@@ -261,6 +264,7 @@ int main()
         // Update the window
         window.display();
     }
+    window.clear();
 
 
 
