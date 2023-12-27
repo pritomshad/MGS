@@ -1,5 +1,7 @@
 #include <iostream>
 #include <stack>
+#include <queue>
+#include <list>
 #include <cmath>
 #include <cstdlib>
 #include <SFML/Graphics.hpp>
@@ -8,8 +10,66 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Network.hpp>
 
-int mazeWidth = 80;
-int mazeHeight = 50;
+int mazeWidth;
+int mazeHeight;
+
+std::vector<int> shortestPath;
+
+bool BFS(std::vector< std::vector<int> > &adj, int src, int dest)
+{
+    int v = mazeWidth * mazeHeight;
+    bool bfs_visited[v];
+    std::list<int> queue;
+    int prev[v];
+    int dist[v];
+    bool pathFound = false;
+
+    for (int i = 0; i < v; i++)
+    {
+        bfs_visited[i] = false;
+        prev[i] = -1;
+        dist[i] = INT32_MAX;
+    }
+
+    bfs_visited[src] = true;
+    dist[src] = 0;
+    queue.push_back(src);
+
+    while (!queue.empty())
+    {
+        int u = queue.front();
+        queue.pop_front();
+        for (int i = 0; i < adj[u].size(); i++) {
+            if (bfs_visited[adj[u][i]] == false) {
+                bfs_visited[adj[u][i]] = true;
+                dist[adj[u][i]] = dist[u] + 1;
+                prev[adj[u][i]] = u;
+                queue.push_back(adj[u][i]);
+ 
+                // We stop BFS when we find
+                // destination.
+                if (adj[u][i] == dest)
+                {
+                    pathFound = true;
+                    break;
+                }
+            }
+        }
+        if (pathFound)
+            break;
+    }
+    if (pathFound)
+    {
+        int crawl = dest;
+        shortestPath.push_back(crawl);
+        while (prev[crawl] != -1) {
+            shortestPath.push_back(prev[crawl]);
+            crawl = prev[crawl];
+        }
+    }
+    return pathFound;
+
+}
 
 sf::RectangleShape drawWhiteSquare(float a, float x, float y)
 {
@@ -33,11 +93,13 @@ std::pair<int, int> intToXy(int val)
 int m_totalVisitedCells;
 std::stack<std::pair<int, int>> m_stack;
 
-int main()
+int main(int argc, char* argv[])
 {
+    mazeWidth = std::stoi(argv[1]);
+    mazeHeight = std::stoi(argv[2]);
     srand(time(NULL));
-    sf::RenderWindow window(sf::VideoMode(1300, 900), "SFML window");
-    window.setFramerateLimit(80);
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Maze Generation and Solver");
+    window.setFramerateLimit(30);
 
     sf::RectangleShape mazeCells[mazeWidth][mazeHeight];
     std::vector<sf::RectangleShape> mazeWalls;
@@ -136,6 +198,7 @@ int main()
             m_visited[randomCellx][randomCelly] = 1;
             m_totalVisitedCells++;
             m_connectedAdjList[currentCell].push_back(neighbourCell);
+            m_connectedAdjList[neighbourCell].push_back(currentCell);
             float cx = cell_coordinates[randomCellx][randomCelly].first;
             float cy = cell_coordinates[randomCellx][randomCelly].second;
             walls.push_back({std::make_pair(cx, cy), randomCell});
@@ -184,8 +247,34 @@ int main()
         }
 
     }
+/*Adjacency list print*/
+/*     for (int i = 0; i < mazeWidth * mazeHeight; i++) 
+    {
+        std::cout << i << ": ";
+        for (auto e : m_connectedAdjList[i])
+        {
+            std::cout << e << " ";
+        }
+        std::cout << std::endl;
+    }
+/*print shortest path
+    
+    if (!shortestPath.empty())
+    {
+        for (auto e: shortestPath)
+        {
+            std::cout << "(" << intToXy(e).first << ", " << intToXy(e).second << ") <- ";
+        }
+        std::cout << std::endl;
+    }
+ */
+
+    BFS(m_connectedAdjList, xyToInt(std::stoi(argv[3]),std::stoi(argv[4])), xyToInt(std::stoi(argv[5]), std::stoi(argv[6])));
+/**************************************render operations*****************************************/
     int nWalls = walls.size();
     int itr = 0;
+    int path = 0;
+    bool alreadyDisplayed = false;
     while (window.isOpen())
     {
         // Process events
@@ -260,6 +349,68 @@ int main()
         {
             window.draw(e);
         }*/
+
+        if (itr >= nWalls && path < shortestPath.size())
+        {
+            if (path == 0)
+            {
+                int fx;
+                int fy;
+                fx = intToXy(shortestPath[0]).first;
+                fy = intToXy(shortestPath[0]).second;
+
+                sf::RectangleShape Cell;
+                Cell.setPosition(cell_coordinates[fx][fy].first, cell_coordinates[fx][fy].second);
+                Cell.setSize(sf::Vector2f(10.f, 10.f));
+                Cell.setFillColor(sf::Color::Red);
+
+                window.draw(Cell);
+            }
+            else
+            {
+                int fx;
+                int fy;
+                fx = intToXy(shortestPath[path]).first;
+                fy = intToXy(shortestPath[path]).second;
+
+                sf::RectangleShape Cell;
+                if (shortestPath[path] - 1 == shortestPath[path-1]) //right
+                {
+                    Cell.setPosition(cell_coordinates[fx][fy].first - 9, cell_coordinates[fx][fy].second + 3);
+                    Cell.setSize(sf::Vector2f(16.f, 4.f));
+                    Cell.setFillColor(sf::Color::Blue);
+                }
+                if (shortestPath[path] + 1 == shortestPath[path-1]) //left
+                {
+                    Cell.setPosition(cell_coordinates[fx][fy].first + 3, cell_coordinates[fx][fy].second + 3);
+                    Cell.setSize(sf::Vector2f(16.f, 4.f));
+                    Cell.setFillColor(sf::Color::Blue);
+                }
+                if (shortestPath[path] - shortestPath[path-1] < -1 ) //up
+                {
+                    Cell.setPosition(cell_coordinates[fx][fy].first + 3, cell_coordinates[fx][fy].second + 3);
+                    Cell.setSize(sf::Vector2f(4.f, 16.f));
+                    Cell.setFillColor(sf::Color::Blue);
+                }
+                if (shortestPath[path] - shortestPath[path-1] > 1 ) //down
+                {
+                    Cell.setPosition(cell_coordinates[fx][fy].first + 3, cell_coordinates[fx][fy].second - 9);
+                    Cell.setSize(sf::Vector2f(4.f, 16.f));
+                    Cell.setFillColor(sf::Color::Blue);
+                }
+                
+                window.draw(Cell);
+                if (path == shortestPath.size()-1)
+                {
+                    sf::RectangleShape Cell;
+                    Cell.setPosition(cell_coordinates[fx][fy].first, cell_coordinates[fx][fy].second);
+                    Cell.setSize(sf::Vector2f(10.f, 10.f));
+                    Cell.setFillColor(sf::Color::Green);
+                    window.draw(Cell);
+                }
+            }
+            path++;
+        }
  
         // Update the window
         window.display();
