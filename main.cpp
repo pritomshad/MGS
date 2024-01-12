@@ -44,32 +44,36 @@ int main(int argc, char* argv[])
     int src = xyToInt(std::stoi(argv[3]),std::stoi(argv[4]),mazeWidth);
     int dest = xyToInt(std::stoi(argv[5]), std::stoi(argv[6]),mazeWidth);
 
-/*-----------------------------------SOLVE--------------------------------------*/
     //BFS(m_connectedAdjList, xyToInt(std::stoi(argv[3]),std::stoi(argv[4]),mazeWidth), xyToInt(std::stoi(argv[5]), std::stoi(argv[6]),mazeWidth), mazeWidth, mazeHeight, shortestPath);
+
+/*-----------------------------------BFS INITIALIZATION--------------------------------------*/
     int v = mazeWidth * mazeHeight;
-    bool bfs_visited[v];
-    std::list<int> queue;
-    int prev[v];
-    std::vector<int> bfs_show;
+
+    //bfs-source
+    bool bfs_visited_src[v];
+    std::list<int> queue_src;
+    int prev_src[v];
+    std::vector<int> bfs_show_src;
 
     for (int i = 0; i < v; i++)
     {
-        bfs_visited[i] = false;
-        prev[i] = -1;
+        bfs_visited_src[i] = false;
+        prev_src[i] = -1;
     }
-    queue.push_back(src);
+    queue_src.push_back(src);
 
-    bool bfs_visited2[v];
-    std::list<int> queue2;
-    int prev2[v];
-    std::vector<int> bfs_show2;
+    //bfs-dest
+    bool bfs_visited_dest[v];
+    std::list<int> queue_dest;
+    int prev_dest[v];
+    std::vector<int> bfs_show_dest;
 
     for (int i = 0; i < v; i++)
     {
-        bfs_visited2[i] = false;
-        prev2[i] = -1;
+        bfs_visited_dest[i] = false;
+        prev_dest[i] = -1;
     }
-    queue2.push_back(dest);
+    queue_dest.push_back(dest);
 /*------------------------------------END---------------------------------------*/
 
 
@@ -162,15 +166,16 @@ int main(int argc, char* argv[])
         }
 /*---------------------------------END OF GENERATION RENDER---------------------------------------*/
 
+/*------------------------------------------Bi-directional bfs-------------------------------------------------*/
         if (itr >= nWalls && shortestPath.size() == 0 && !path_drawn)
         {
             //window.setFramerateLimit(120);
-            BFS(m_connectedAdjList, cell_coordinates, src, dest, mazeWidth, mazeHeight, shortestPath, queue, prev, bfs_visited, scale, bfs_show);
-            for (int i=0; i<bfs_show.size(); i++)
+            BFS(m_connectedAdjList, src, dest, mazeWidth, mazeHeight, shortestPath, queue_src, prev_src, bfs_visited_src, bfs_show_src);
+            for (int i=0; i<bfs_show_src.size(); i++)
             {
                 
-                int cx = intToXy(bfs_show[i], mazeWidth).first;
-                int cy = intToXy(bfs_show[i], mazeWidth).second;
+                int cx = intToXy(bfs_show_src[i], mazeWidth).first;
+                int cy = intToXy(bfs_show_src[i], mazeWidth).second;
 
                 sf::RectangleShape Fill;
                 Fill.setPosition(cell_coordinates[cx][cy].first, cell_coordinates[cx][cy].second);
@@ -184,28 +189,28 @@ int main(int argc, char* argv[])
         if (itr >= nWalls && shortestPath2.size() == 0 && !path_drawn)
         {
             //window.setFramerateLimit(120);
-            BFS(m_connectedAdjList, cell_coordinates, dest, src, mazeWidth, mazeHeight, shortestPath2, queue2, prev2, bfs_visited2, scale, bfs_show2);
-            for (int i=0; i<bfs_show2.size(); i++)
+            BFS(m_connectedAdjList, dest, src, mazeWidth, mazeHeight, shortestPath2, queue_dest, prev_dest, bfs_visited_dest, bfs_show_dest);
+            for (int i=0; i<bfs_show_dest.size(); i++)
             {
-                if (bfs_visited[bfs_show2[i]])
+                if (bfs_visited_src[bfs_show_dest[i]])
                 {
-                    int crawl = bfs_show2[i];
+                    int crawl = bfs_show_dest[i];
                     shortestPath.push_back(crawl);
-                    while (prev[crawl] != src) {
+                    while (prev_src[crawl] != src) {
                         //std::cout << "crawl: " << crawl << std::endl;
-                        shortestPath.push_back(prev[crawl]);
-                        crawl = prev[crawl];
+                        shortestPath.push_back(prev_src[crawl]);
+                        crawl = prev_src[crawl];
                     }
-                    crawl = bfs_show2[i];
-                    while (prev2[crawl] != dest) {
+                    crawl = bfs_show_dest[i];
+                    while (prev_dest[crawl] != dest) {
                         //std::cout << "crawl: " << crawl << std::endl;
-                        shortestPath.push_back(prev2[crawl]);
-                        crawl = prev2[crawl];
+                        shortestPath.push_back(prev_dest[crawl]);
+                        crawl = prev_dest[crawl];
                     }
                 }
 
-                int cx = intToXy(bfs_show2[i], mazeWidth).first;
-                int cy = intToXy(bfs_show2[i], mazeWidth).second;
+                int cx = intToXy(bfs_show_dest[i], mazeWidth).first;
+                int cy = intToXy(bfs_show_dest[i], mazeWidth).second;
 
                 sf::RectangleShape Fill;
                 Fill.setPosition(cell_coordinates[cx][cy].first, cell_coordinates[cx][cy].second);
@@ -284,11 +289,11 @@ int main(int argc, char* argv[])
 /*---------------------------------END OF SOLVE RENDER---------------------------------------*/
 
         window.display(); // Update the window
-        for (int i=0; i<bfs_show.size(); i++)
+        for (int i=0; i<bfs_show_src.size(); i++)
         {
             //window.setFramerateLimit(120);
-            int cx = intToXy(bfs_show[i], mazeWidth).first;
-            int cy = intToXy(bfs_show[i], mazeWidth).second;
+            int cx = intToXy(bfs_show_src[i], mazeWidth).first;
+            int cy = intToXy(bfs_show_src[i], mazeWidth).second;
 
             sf::RectangleShape Fill;
             Fill.setPosition(cell_coordinates[cx][cy].first, cell_coordinates[cx][cy].second);
@@ -296,12 +301,12 @@ int main(int argc, char* argv[])
             Fill.setFillColor(sf::Color(182, 207, 241));
             window.draw(Fill);
         }
-        bfs_show = std::vector<int> ();
-        for (int i=0; i<bfs_show2.size(); i++)
+        bfs_show_src = std::vector<int> ();
+        for (int i=0; i<bfs_show_dest.size(); i++)
         {
             //window.setFramerateLimit(120);
-            int cx = intToXy(bfs_show2[i], mazeWidth).first;
-            int cy = intToXy(bfs_show2[i], mazeWidth).second;
+            int cx = intToXy(bfs_show_dest[i], mazeWidth).first;
+            int cy = intToXy(bfs_show_dest[i], mazeWidth).second;
 
             sf::RectangleShape Fill;
             Fill.setPosition(cell_coordinates[cx][cy].first, cell_coordinates[cx][cy].second);
@@ -309,7 +314,7 @@ int main(int argc, char* argv[])
             Fill.setFillColor(sf::Color(229, 192, 230));
             window.draw(Fill);
         }
-        bfs_show2 = std::vector<int> ();
+        bfs_show_dest = std::vector<int> ();
 
     }
     window.clear();

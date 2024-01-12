@@ -2,7 +2,7 @@
 #include "Solver.hpp"
 #include <vector>
 
-bool BFS(std::vector< std::vector<int> > &adj, std::pair<float, float> (&cell_coordinates)[1000][1000], int src, int dest, int mazeWidth, int mazeHeight, std::vector<int> &shortestPath, std::list<int> &queue, int *prev, bool *bfs_visited, float scale, std::vector<sf::RectangleShape> &bfs_show)
+bool BFS(std::vector< std::vector<int> > &adj, int src, int dest, int mazeWidth, int mazeHeight, std::vector<int> &shortestPath, std::list<int> &queue, int *prev, bool *bfs_visited, std::vector<int> &bfs_show)
 {
     if (!queue.empty())
     {
@@ -13,16 +13,7 @@ bool BFS(std::vector< std::vector<int> > &adj, std::pair<float, float> (&cell_co
 
                 /*render children to the screen*/
 
-
-                int cx = intToXy(adj[u][i], mazeWidth).first;
-                int cy = intToXy(adj[u][i], mazeWidth).second;
-
-                sf::RectangleShape Fill;
-                Fill.setPosition(cell_coordinates[cx][cy].first, cell_coordinates[cx][cy].second);
-                Fill.setSize(sf::Vector2f(10.f*scale, 10.f*scale));
-                Fill.setFillColor(sf::Color::Blue);
-                bfs_show.push_back(Fill);
-                
+                bfs_show.push_back(adj[u][i]);                
 
 
                 /*end of render children*/
